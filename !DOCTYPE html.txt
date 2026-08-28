@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bus Chase Runner</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+body{
+    background:#111;
+    font-family:Arial,sans-serif;
+    overflow:hidden;
+}
+
+#game{
+    width:100vw;
+    height:100vh;
+    position:relative;
+    background:linear-gradient(#62c9ff,#dff7ff);
+    overflow:hidden;
+}
+
+/* HOME */
+#home{
+    position:absolute;
+    inset:0;
+    z-index:20;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    background:linear-gradient(#168bd1,#72d6ff);
+}
+
+#home h1{
+    font-size:45px;
+    color:white;
+    text-shadow:3px 3px #222;
+    margin-bottom:20px;
+}
+
+.homeCharacter{
+    font-size:90px;
+    margin-bottom:20px;
+}
+
+button{
+    border:0;
+    border-radius:15px;
+    padding:15px 30px;
+    margin:7px;
+    font-size:20px;
+    font-weight:bold;
+    cursor:pointer;
+    background:#ffd21c;
+    box-shadow:0 5px #a67b00;
+}
+
+button:active{
+    transform:translateY(4px);
+    box-shadow:0 1px #a67b00;
+}
+
+/* SHOP */
+#shop{
+    position:absolute;
+    inset:0;
+    z-index:30;
+    display:none;
+    background:#16233a;
+    color:white;
+    padding:20px;
+    text-align:center;
+}
+
+#shop h2{
+    font-size:35px;
+    margin-bottom:15px;
+}
+
+.characters{
+    display:flex;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:12px;
+}
+
+.characterCard{
+    background:#263c5c;
+    width:150px;
+    padding:15px;
+    border-radius:15px;
+}
+
+.characterIcon{
+    font-size:65px;
+}
+
+.characterCard h3{
+    margin:8px;
+}
+
+.price{
+    color:#ffe000;
+}
+
+/* ROAD */
+#road{
+    position:absolute;
+    width:70%;
+    height:100%;
+    left:15%;
+    background:#3e4147;
+    transform:perspective(500px) rotateX(8deg);
+    border-left:10px solid #ddd;
+    border-right:10px solid #ddd;
+}
+
+.laneLine{
+    position:absolute;
+    width:8px;
+    height:100%;
+    background:repeating-linear-gradient(
+        to bottom,
+        white 0px,
+        white 80px,
+        transparent 80px,
+        transparent 150px
+    );
+    opacity:.8;
+}
+
+.line1{left:33%;}
+.line2{left:66%;}
+
+/* PLAYER */
+#player{
+    position:absolute;
+    bottom:80px;
+    width:70px;
+    height:100px;
+    font-size:65px;
+    text-align:center;
+    transition:left .12s;
+    z-index:8;
+}
+
+/* POLICE */
+#police{
+    position:absolute;
+    bottom:5px;
+    left:50%;
+    transform:translateX(-50%);
+    font-size:60px;
+    z-index:7;
+}
+
+/* BUS */
+.bus{
+    position:absolute;
+    width:85px;
+    height:130px;
+    background:#e92828;
+    border-radius:15px;
+    border:5px solid #222;
+    z-index:6;
+}
+
+.bus::before{
+    content:"BUS";
+    position:absolute;
+    top:8px;
+    left:12px;
+    right:12px;
+    text-align:center;
+    background:#ffe100;
+    color:#111;
+    font-weight:bold;
+    padding:5px;
+    border-radius:5px;
+}
+
+.bus::after{
+    content:"";
+    position:absolute;
+    width:55px;
+    height:35px;
+    background:#9be5ff;
+    top:42px;
+    left:10px;
+    border-radius:5px;
+}
+
+/* STAR */
+.star{
+    position:absolute;
+    font-size:42px;
+    z-index:5;
+}
+
+/* SCORE */
+#hud{
+    position:absolute;
+    top:15px;
+    left:15px;
+    right:15px;
+    z-index:15;
+    display:flex;
+    justify-content:space-between;
+    color:white;
+    font-size:22px;
+    font-weight:bold;
+    text-shadow:2px 2px #000;
+}
+
+/* MOBILE CONTROLS */
+#controls{
+    position:absolute;
+    bottom:15px;
+    left:0;
+    right:0;
+    z-index:20;
+    display:flex;
+    justify-content:center;
+}
+
+.control{
+    width:65px;
+    height:55px;
+    padding:5px;
+    margin:5px;
+    font-size:28px;
+}
+
+/* GAME OVER */
+#gameOver{
+    position:absolute;
+    inset:0;
+    z-index:50;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    background:rgba(0,0,0,.75);
+    color:white;
+}
+
+#gameOver h2{
+    font-size:45px;
+    color:#ff4040;
+    margin-bottom:15px;
+}
+</style>
+</head>
+
+<body>
+
+<div id="game">
+
+    <!-- HOME PAGE -->
+    <div id="home">
+        <h1>🚌 BUS CHASE</h1>
+
+        <div class="homeCharacter" id="homeCharacter">
+            🦸
+        </div>
+
+        <button onclick="startGame()">▶ PLAY GAME</button>
+        <button onclick="openShop()">🛒 CHARACTER SHOP</button>
+    </div>
+
+    <!-- SHOP -->
+    <div id="shop">
+        <h2>🛒 CHARACTER SHOP</h2>
+
+        <div>
+            ⭐ Stars: <span id="shopStars">0</span>
+        </div>
+
+        <br>
+
+        <div class="characters">
+
+            <div class="characterCard">
+                <div class="characterIcon">💪</div>
+                <h3>Hulk</h3>
+                <div class="price">Free</div>
+                <button onclick="selectCharacter('💪')">SELECT</button>
+            </div>
+
+            <div class="characterCard">
+                <div class="characterIcon">🤖</div>
+                <h3>Iron Man</h3>
+                <div class="price">50 ⭐</div>
+                <button onclick="buyCharacter('🤖',50)">BUY</button>
+            </div>
+
+            <div class="characterCard">
+                <div class="characterIcon">🐒</div>
+                <h3>Monkey</h3>
+                <div class="price">100 ⭐</div>
+                <button onclick="buyCharacter('🐒',100)">BUY</button>
+            </div>
+
+            <div class="characterCard">
+                <div class="characterIcon">👑</div>
+                <h3>King</h3>
+                <div class="price">200 ⭐</div>
+                <button onclick="buyCharacter('👑',200)">BUY</button>
+            </div>
+
+        </div>
+
+        <br>
+        <button onclick="closeShop()">⬅ BACK</button>
+    </div>
+
+    <!-- ROAD -->
+    <div id="road">
+        <div class="laneLine line1"></div>
+        <div class="laneLine line2"></div>
+    </div>
+
+    <!-- HUD -->
+    <div id="hud">
+        <div>⭐ <span id="score">0</span></div>
+        <div>🏆 <span id="highScore">0</span></div>
+    </div>
+
+    <!-- PLAYER -->
+    <div id="player">💪</div>
+
+    <!-- POLICE -->
+    <div id="police">👮</div>
+
+    <!-- CONTROLS -->
+    <div id="controls">
+        <button class="control" onclick="moveLeft()">⬅</button>
+        <button class="control" onclick="jump()">⬆</button>
+        <button class="control" onclick="moveRight()">➡</button>
+    </div>
+
+    <!-- GAME OVER -->
+    <div id="gameOver">
+        <h2>GAME OVER</h2>
+        <p>Stars: <span id="finalScore">0</span></p>
+        <button onclick="restartGame()">🔄 PLAY AGAIN</button>
+        <button onclick="goHome()">🏠 HOME</button>
+    </div>
+
+</div>
+
+<script>
+
+let lane = 1;
+let score = 0;
+let running = false;
+let speed = 5;
+let character = "💪";
+
+let player = document.getElementById("player");
+let game = document.getElementById("game");
+
+let stars = [];
+let buses = [];
+
+let highScore = localStorage.getItem("highScore") || 0;
+document.getElementById("highScore").innerText = highScore;
+
+
+/* CHARACTER */
+function selectCharacter(icon){
+
+    character = icon;
+    player.innerText = icon;
+    document.getElementById("homeCharacter").innerText = icon;
+
+    alert("Character Selected!");
+
+    closeShop();
+}
+
+function buyCharacter(icon,cost){
+
+    let currentStars = Number(localStorage.getItem("totalStars") || 0);
+
+    if(currentStars >= cost){
+
+        currentStars -= cost;
+
+        localStorage.setItem("totalStars",currentStars);
+
+        character = icon;
+        player.innerText = icon;
+
+        alert("Character Purchased!");
+
+        updateShop();
+
+    }else{
+
+        alert("Not enough stars!");
+
+    }
+}
+
+function updateShop(){
+
+    let total = Number(localStorage.getItem("totalStars") || 0);
+
+    document.getElementById("shopStars").innerText = total;
+}
+
+
+/* SHOP */
+function openShop(){
+
+    updateShop();
+
+    document.getElementById("shop").style.display="block";
+}
+
+function closeShop(){
+
+    document.getElementById("shop").style.display="none";
+}
+
+
+/* LANE */
+function lanePosition(){
+
+    let road = document.getElementById("road");
+
+    let roadLeft = road.offsetLeft;
+    let laneWidth = road.offsetWidth / 3;
+
+    return roadLeft + laneWidth * lane + laneWidth/2 - 35;
+}
+
+
+/* MOVE */
+function moveLeft(){
+
+    if(!running)return;
+
+    if(lane > 0){
+        lane--;
+        updatePlayer();
+    }
+}
+
+function moveRight(){
+
+    if(!running)return;
+
+    if(lane < 2){
+        lane++;
+        updatePlayer();
+    }
+}
+
+function updatePlayer(){
+
+    player.style.left = lanePosition()+"px";
+
+}
+
+
+/* JUMP */
+function jump(){
+
+    if(!running)return;
+
+    player.style.bottom="190px";
+
+    setTimeout(()=>{
+        player.style.bottom="80px";
+    },500);
+}
+
+
+/* KEYBOARD */
+document.addEventListener("keydown",function(e){
+
+    if(e.key==="ArrowLeft" || e.key==="a"){
+        moveLeft();
+    }
+
+    if(e.key==="ArrowRight" || e.key==="d"){
+        moveRight();
+    }
+
+    if(e.key==="ArrowUp" || e.key==="w" || e.key===" "){
+        jump();
+    }
+
+});
+
+
+/* START GAME */
+function startGame(){
+
+    document.getElementById("home").style.display="none";
+    document.getElementById("gameOver").style.display="none";
+
+    running=true;
+    score=0;
+    lane=1;
+
+    document.getElementById("score").innerText=score;
+
+    updatePlayer();
+
+    gameLoop();
+
+}
+
+
+/* CREATE BUS */
+function createBus(){
+
+    if(!running)return;
+
+    let bus=document.createElement("div");
+
+    bus.className="bus";
+
+    let busLane=Math.floor(Math.random()*3);
+
+    bus.dataset.lane=busLane;
+
+    let road=document.getElementById("road");
+
+    let roadLeft=road.offsetLeft;
+    let laneWidth=road.offsetWidth/3;
+
+    bus.style.left=
+        (roadLeft + laneWidth*busLane + laneWidth/2 - 42)+"px";
+
+    bus.style.top="-150px";
+
+    game.appendChild(bus);
+
+    buses.push(bus);
+
+}
+
+
+/* CREATE STAR */
+function createStar(){
+
+    if(!running)return;
+
+    let star=document.createElement("div");
+
+    star.className="star";
+    star.innerText="⭐";
+
+    let starLane=Math.floor(Math.random()*3);
+
+    star.dataset.lane=starLane;
+
+    let road=document.getElementById("road");
+
+    let roadLeft=road.offsetLeft;
+    let laneWidth=road.offsetWidth/3;
+
+    star.style.left=
+        (roadLeft + laneWidth*starLane + laneWidth/2 - 20)+"px";
+
+    star.style.top="-50px";
+
+    game.appendChild(star);
+
+    stars.push(star);
+
+}
+
+
+/* COLLISION */
+function collision(a,b){
+
+    let r1=a.getBoundingClientRect();
+    let r2=b.getBoundingClientRect();
+
+    return !(
+        r1.right < r2.left ||
+        r1.left > r2.right ||
+        r1.bottom < r2.top ||
+        r1.top > r2.bottom
+    );
+
+}
+
+
+/* GAME LOOP */
+function gameLoop(){
+
+    if(!running)return;
+
+    /* BUSES */
+
+    buses.forEach((bus,index)=>{
+
+        let top=parseInt(bus.style.top);
+
+        top+=speed;
+
+        bus.style.top=top+"px";
+
+        if(
+            top>window.innerHeight
+        ){
+
+            bus.remove();
+            buses.splice(index,1);
+
+        }
+
+        if(
+            Number(bus.dataset.lane)===lane &&
+            collision(player,bus)
+        ){
+
+            gameOver();
+
+        }
+
+    });
+
+
+    /* STARS */
+
+    stars.forEach((star,index)=>{
+
+        let top=parseInt(star.style.top);
+
+        top+=speed;
+
+        star.style.top=top+"px";
+
+        if(top>window.innerHeight){
+
+            star.remove();
+            stars.splice(index,1);
+
+        }
+
+        if(
+            Number(star.dataset.lane)===lane &&
+            collision(player,star)
+        ){
+
+            score++;
+
+            document.getElementById("score").innerText=score;
+
+            star.remove();
+            stars.splice(index,1);
+
+        }
+
+    });
+
+
+    requestAnimationFrame(gameLoop);
+
+}
+
+
+/* SPAWN */
+setInterval(()=>{
+
+    if(running){
+        createBus();
+    }
+
+},1300);
+
+
+setInterval(()=>{
+
+    if(running){
+        createStar();
+    }
+
+},700);
+
+
+/* GAME OVER */
+function gameOver(){
+
+    if(!running)return;
+
+    running=false;
+
+    document.getElementById("finalScore").innerText=score;
+
+    let oldHigh=Number(localStorage.getItem("highScore") || 0);
+
+    if(score>oldHigh){
+
+        localStorage.setItem("highScore",score);
+
+        document.getElementById("highScore").innerText=score;
+
+    }
+
+    let totalStars=
+        Number(localStorage.getItem("totalStars") || 0);
+
+    localStorage.setItem(
+        "totalStars",
+        totalStars+score
+    );
+
+    document.getElementById("gameOver").style.display="flex";
+
+}
+
+
+/* RESTART */
+function restartGame(){
+
+    buses.forEach(x=>x.remove());
+    stars.forEach(x=>x.remove());
+
+    buses=[];
+    stars=[];
+
+    startGame();
+
+}
+
+
+/* HOME */
+function goHome(){
+
+    buses.forEach(x=>x.remove());
+    stars.forEach(x=>x.remove());
+
+    buses=[];
+    stars=[];
+
+    running=false;
+
+    document.getElementById("gameOver").style.display="none";
+    document.getElementById("home").style.display="flex";
+
+}
+
+
+/* INITIAL POSITION */
+window.onload=function(){
+
+    player.innerText=character;
+
+    updatePlayer();
+
+};
+
+</script>
+
+</body>
+</html>
