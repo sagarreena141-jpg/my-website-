@@ -1,0 +1,730 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Street Rush - Bus Runner</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:Arial,sans-serif;
+  background:#111;
+  overflow:hidden;
+}
+#game{
+  position:relative;
+  width:100vw;
+  height:100vh;
+  overflow:hidden;
+  background:linear-gradient(#62c9ff 0%,#dff7ff 55%,#777 56%,#333 100%);
+}
+
+/* CITY */
+.city{
+  position:absolute;
+  bottom:43%;
+  width:100%;
+  height:170px;
+  display:flex;
+  align-items:end;
+  gap:10px;
+  animation:cityMove 5s linear infinite;
+}
+.building{
+  min-width:80px;
+  height:120px;
+  background:#667788;
+  border:3px solid #394550;
+}
+.building:nth-child(2n){height:160px}
+.building:nth-child(3n){height:95px}
+
+@keyframes cityMove{
+  from{transform:translateX(0)}
+  to{transform:translateX(-250px)}
+}
+
+/* ROAD */
+.road{
+  position:absolute;
+  bottom:0;
+  width:100%;
+  height:45%;
+  background:#292929;
+  border-top:8px solid #aaa;
+}
+.lane{
+  position:absolute;
+  height:100%;
+  width:33.33%;
+  border-right:5px dashed #ddd;
+  opacity:.55;
+}
+.lane:nth-child(1){left:0}
+.lane:nth-child(2){left:33.33%}
+.lane:nth-child(3){left:66.66%;border:0}
+
+/* PLAYER */
+#player{
+  position:absolute;
+  bottom:13%;
+  left:50%;
+  width:65px;
+  height:95px;
+  transform:translateX(-50%);
+  z-index:10;
+  transition:left .15s;
+}
+.head{
+  width:38px;height:38px;
+  border-radius:50%;
+  background:#f0b27a;
+  margin:auto;
+  border:3px solid #222;
+}
+.body{
+  width:48px;height:45px;
+  margin:auto;
+  border-radius:12px;
+  background:#1976d2;
+}
+.leg{
+  position:absolute;
+  bottom:0;
+  width:14px;height:35px;
+  background:#222;
+  border-radius:8px;
+}
+.leg.l{left:15px}
+.leg.r{right:15px}
+
+.running .leg.l{animation:run .18s infinite alternate}
+.running .leg.r{animation:run .18s infinite alternate-reverse}
+
+@keyframes run{
+  from{transform:rotate(25deg)}
+  to{transform:rotate(-25deg)}
+}
+
+/* POLICE */
+#police{
+  position:absolute;
+  bottom:5%;
+  left:50%;
+  transform:translateX(-50%);
+  width:55px;
+  height:80px;
+  z-index:8;
+  animation:policeRun .3s infinite alternate;
+}
+.policeHead{
+  width:32px;height:32px;
+  border-radius:50%;
+  background:#f0b27a;
+  margin:auto;
+  border:3px solid #222;
+}
+.policeBody{
+  width:45px;height:42px;
+  background:#164b9b;
+  margin:auto;
+  border-radius:10px;
+}
+@keyframes policeRun{
+  from{transform:translateX(-50%) rotate(-3deg)}
+  to{transform:translateX(-50%) rotate(3deg)}
+}
+
+/* BUS */
+.bus{
+  position:absolute;
+  width:105px;
+  height:70px;
+  background:#e53935;
+  border-radius:12px;
+  border:4px solid #222;
+  z-index:7;
+}
+.bus:before{
+  content:"";
+  position:absolute;
+  top:10px;left:10px;
+  width:78px;height:25px;
+  background:#9ee8ff;
+  border:3px solid #222;
+}
+.bus:after{
+  content:"";
+  position:absolute;
+  bottom:-13px;left:10px;
+  width:18px;height:18px;
+  border-radius:50%;
+  background:#111;
+  box-shadow:65px 0 #111;
+}
+
+/* STAR */
+.star{
+  position:absolute;
+  font-size:38px;
+  z-index:9;
+  filter:drop-shadow(0 0 8px gold);
+  animation:spin .5s linear infinite;
+}
+@keyframes spin{
+  to{transform:rotateY(360deg)}
+}
+
+/* SKATEBOARD */
+#skate{
+  position:absolute;
+  font-size:48px;
+  z-index:11;
+  display:none;
+  filter:drop-shadow(0 0 10px cyan);
+}
+.skateMode #skate{display:block}
+.skateMode #player{
+  animation:boardBounce .25s infinite alternate;
+}
+@keyframes boardBounce{
+  from{bottom:13%}
+  to{bottom:14%}
+}
+
+/* UI */
+#ui{
+  position:absolute;
+  top:15px;
+  left:15px;
+  z-index:30;
+  color:white;
+  font-size:22px;
+  text-shadow:2px 2px #000;
+}
+#shopBtn,#restartBtn{
+  position:absolute;
+  right:15px;
+  top:15px;
+  z-index:40;
+  padding:12px 18px;
+  border:0;
+  border-radius:12px;
+  background:#ffca28;
+  font-size:18px;
+  font-weight:bold;
+  cursor:pointer;
+}
+#restartBtn{
+  display:none;
+  top:65%;
+  right:50%;
+  transform:translate(50%,-50%);
+}
+
+/* SHOP */
+#shop{
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,.85);
+  z-index:100;
+  display:none;
+  color:white;
+  text-align:center;
+  padding-top:60px;
+}
+#shop h1{margin-bottom:25px}
+.characters{
+  display:flex;
+  justify-content:center;
+  gap:15px;
+  flex-wrap:wrap;
+}
+.char{
+  width:130px;
+  padding:18px 10px;
+  background:#292929;
+  border:2px solid #777;
+  border-radius:15px;
+  cursor:pointer;
+}
+.char:hover{transform:scale(1.06)}
+.charIcon{font-size:55px;margin-bottom:8px}
+.close{
+  margin-top:30px;
+  padding:10px 25px;
+  border:0;
+  border-radius:10px;
+  cursor:pointer;
+}
+
+/* EFFECT */
+#flash{
+  position:absolute;
+  inset:0;
+  z-index:90;
+  background:white;
+  opacity:0;
+  pointer-events:none;
+}
+.flash{
+  animation:flash .25s;
+}
+@keyframes flash{
+  50%{opacity:.8}
+}
+
+/* JUMP */
+.jump{
+  animation:jump .65s ease-out;
+}
+@keyframes jump{
+  0%{bottom:13%}
+  50%{bottom:38%}
+  100%{bottom:13%}
+}
+
+#controls{
+  position:absolute;
+  bottom:15px;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:50;
+  display:flex;
+  gap:12px;
+}
+.control{
+  width:60px;height:55px;
+  border:0;
+  border-radius:15px;
+  background:rgba(255,255,255,.8);
+  font-size:28px;
+  cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div id="game">
+
+  <div class="city">
+    <div class="building"></div>
+    <div class="building"></div>
+    <div class="building"></div>
+    <div class="building"></div>
+    <div class="building"></div>
+    <div class="building"></div>
+    <div class="building"></div>
+  </div>
+
+  <div class="road">
+    <div class="lane"></div>
+    <div class="lane"></div>
+    <div class="lane"></div>
+  </div>
+
+  <div id="ui">
+    ⭐ Stars: <span id="score">0</span><br>
+    🏆 Best: <span id="best">0</span>
+  </div>
+
+  <button id="shopBtn">🛒 SHOP</button>
+
+  <div id="player" class="running">
+    <div class="head"></div>
+    <div class="body"></div>
+    <div class="leg l"></div>
+    <div class="leg r"></div>
+  </div>
+
+  <div id="police">
+    <div class="policeHead"></div>
+    <div class="policeBody"></div>
+  </div>
+
+  <div id="skate">🛹</div>
+
+  <div id="flash"></div>
+
+  <div id="controls">
+    <button class="control" onclick="move(-1)">⬅️</button>
+    <button class="control" onclick="jump()">⬆️</button>
+    <button class="control" onclick="move(1)">➡️</button>
+  </div>
+
+  <button id="restartBtn" onclick="restart()">🔄 PLAY AGAIN</button>
+
+  <div id="shop">
+    <h1>🛒 CHARACTER SHOP</h1>
+
+    <div class="characters">
+
+      <div class="char" onclick="selectCharacter('hulk')">
+        <div class="charIcon">💪</div>
+        <b>HULK</b>
+      </div>
+
+      <div class="char" onclick="selectCharacter('iron')">
+        <div class="charIcon">🤖</div>
+        <b>IRON MAN</b>
+      </div>
+
+      <div class="char" onclick="selectCharacter('monkey')">
+        <div class="charIcon">🐒</div>
+        <b>MONKEY</b>
+      </div>
+
+      <div class="char" onclick="selectCharacter('king')">
+        <div class="charIcon">👑</div>
+        <b>KING</b>
+      </div>
+
+    </div>
+
+    <button class="close" onclick="closeShop()">CLOSE</button>
+  </div>
+
+</div>
+
+<script>
+
+let lane=1;
+let score=0;
+let best=localStorage.getItem("best") || 0;
+let gameOver=false;
+let speed=5;
+let skateboard=false;
+
+const game=document.getElementById("game");
+const player=document.getElementById("player");
+const skate=document.getElementById("skate");
+const scoreText=document.getElementById("score");
+const bestText=document.getElementById("best");
+
+bestText.textContent=best;
+
+const lanes=[
+  "20%",
+  "50%",
+  "80%"
+];
+
+function setLane(){
+  player.style.left=lanes[lane];
+  skate.style.left=lanes[lane];
+}
+
+setLane();
+
+/* MOVE */
+function move(dir){
+  if(gameOver)return;
+
+  lane+=dir;
+
+  if(lane<0)lane=0;
+  if(lane>2)lane=2;
+
+  setLane();
+}
+
+/* JUMP */
+function jump(){
+  if(gameOver)return;
+
+  player.classList.remove("jump");
+  void player.offsetWidth;
+  player.classList.add("jump");
+}
+
+/* KEYBOARD */
+document.addEventListener("keydown",e=>{
+  if(e.key==="ArrowLeft" || e.key.toLowerCase()==="a")move(-1);
+  if(e.key==="ArrowRight" || e.key.toLowerCase()==="d")move(1);
+  if(e.key==="ArrowUp" || e.code==="Space")jump();
+});
+
+/* CREATE BUS */
+function createBus(){
+
+  if(gameOver)return;
+
+  const bus=document.createElement("div");
+  bus.className="bus";
+
+  let busLane=Math.floor(Math.random()*3);
+  bus.dataset.lane=busLane;
+
+  bus.style.left=lanes[busLane];
+  bus.style.top="-100px";
+  bus.style.transform="translateX(-50%)";
+
+  game.appendChild(bus);
+
+  let y=-100;
+
+  function animate(){
+
+    if(gameOver){
+      bus.remove();
+      return;
+    }
+
+    y+=speed;
+    bus.style.top=y+"px";
+
+    if(y>window.innerHeight){
+      bus.remove();
+      return;
+    }
+
+    /* collision */
+    const playerRect=player.getBoundingClientRect();
+    const busRect=bus.getBoundingClientRect();
+
+    if(
+      playerRect.left<busRect.right &&
+      playerRect.right>busRect.left &&
+      playerRect.top<busRect.bottom &&
+      playerRect.bottom>busRect.top
+    ){
+
+      if(!player.classList.contains("jump")){
+        crash();
+        return;
+      }
+    }
+
+    requestAnimationFrame(animate);
+  }
+
+  requestAnimationFrame(animate);
+}
+
+/* CREATE STAR */
+function createStar(){
+
+  if(gameOver)return;
+
+  const star=document.createElement("div");
+  star.className="star";
+  star.textContent="⭐";
+
+  let starLane=Math.floor(Math.random()*3);
+
+  star.style.left=lanes[starLane];
+  star.style.top="-60px";
+  star.style.transform="translateX(-50%)";
+
+  game.appendChild(star);
+
+  let y=-60;
+
+  function animate(){
+
+    if(gameOver){
+      star.remove();
+      return;
+    }
+
+    y+=speed;
+    star.style.top=y+"px";
+
+    const p=player.getBoundingClientRect();
+    const s=star.getBoundingClientRect();
+
+    if(
+      p.left<s.right &&
+      p.right>s.left &&
+      p.top<s.bottom &&
+      p.bottom>s.top
+    ){
+
+      score++;
+      scoreText.textContent=score;
+
+      if(score>best){
+        best=score;
+        bestText.textContent=best;
+        localStorage.setItem("best",best);
+      }
+
+      star.remove();
+      return;
+    }
+
+    if(y>window.innerHeight){
+      star.remove();
+      return;
+    }
+
+    requestAnimationFrame(animate);
+  }
+
+  requestAnimationFrame(animate);
+}
+
+/* SKATEBOARD POWERUP */
+function createSkate(){
+
+  if(gameOver)return;
+
+  const power=document.createElement("div");
+
+  power.textContent="🛹";
+  power.style.position="absolute";
+  power.style.fontSize="48px";
+  power.style.left=lanes[Math.floor(Math.random()*3)];
+  power.style.top="-60px";
+  power.style.zIndex="9";
+
+  game.appendChild(power);
+
+  let y=-60;
+
+  function animate(){
+
+    if(gameOver){
+      power.remove();
+      return;
+    }
+
+    y+=speed;
+    power.style.top=y+"px";
+
+    const p=player.getBoundingClientRect();
+    const s=power.getBoundingClientRect();
+
+    if(
+      p.left<s.right &&
+      p.right>s.left &&
+      p.top<s.bottom &&
+      p.bottom>s.top
+    ){
+      activateSkateboard();
+      power.remove();
+      return;
+    }
+
+    if(y>window.innerHeight){
+      power.remove();
+      return;
+    }
+
+    requestAnimationFrame(animate);
+  }
+
+  requestAnimationFrame(animate);
+}
+
+function activateSkateboard(){
+
+  skateboard=true;
+  game.classList.add("skateMode");
+
+  speed=9;
+
+  setTimeout(()=>{
+    skateboard=false;
+    game.classList.remove("skateMode");
+    speed=5;
+  },6000);
+}
+
+/* CRASH */
+function crash(){
+
+  gameOver=true;
+
+  document.getElementById("flash").classList.add("flash");
+
+  player.style.transform="translateX(-50%) rotate(90deg)";
+
+  document.getElementById("restartBtn").style.display="block";
+
+  setTimeout(()=>{
+    document.getElementById("flash").classList.remove("flash");
+  },300);
+}
+
+/* GAME LOOP */
+setInterval(()=>{
+  if(!gameOver)createBus();
+},1300);
+
+setInterval(()=>{
+  if(!gameOver)createStar();
+},700);
+
+setInterval(()=>{
+  if(!gameOver && Math.random()<.5)createSkate();
+},7000);
+
+/* SCORE INCREASE */
+setInterval(()=>{
+  if(!gameOver){
+    score++;
+    scoreText.textContent=score;
+
+    if(score>best){
+      best=score;
+      bestText.textContent=best;
+      localStorage.setItem("best",best);
+    }
+  }
+},2000);
+
+/* SHOP */
+document.getElementById("shopBtn").onclick=()=>{
+  document.getElementById("shop").style.display="block";
+};
+
+function closeShop(){
+  document.getElementById("shop").style.display="none";
+}
+
+function selectCharacter(type){
+
+  const body=player.querySelector(".body");
+  const head=player.querySelector(".head");
+
+  if(type==="hulk"){
+    body.style.background="#36a852";
+    head.style.background="#54c45e";
+  }
+
+  if(type==="iron"){
+    body.style.background="#c62828";
+    head.style.background="#ddd";
+  }
+
+  if(type==="monkey"){
+    body.style.background="#8d5524";
+    head.textContent="🐒";
+    head.style.background="transparent";
+    head.style.border="0";
+  }
+
+  if(type==="king"){
+    body.style.background="#7b1fa2";
+    head.textContent="👑";
+    head.style.background="transparent";
+    head.style.border="0";
+  }
+
+  closeShop();
+}
+
+/* RESTART */
+function restart(){
+  location.reload();
+}
+
+</script>
+
+</body>
+</html>
+```
