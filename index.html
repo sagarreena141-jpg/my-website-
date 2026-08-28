@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Website</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #111827, #2563eb);
+            color: white;
+            min-height: 100vh;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 8%;
+            background: rgba(0, 0, 0, 0.25);
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin-left: 25px;
+            font-size: 17px;
+        }
+
+        nav a:hover {
+            color: #93c5fd;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 120px 20px;
+        }
+
+        .hero h1 {
+            font-size: 55px;
+            margin-bottom: 20px;
+        }
+
+        .hero p {
+            font-size: 20px;
+            margin-bottom: 35px;
+        }
+
+        button {
+            padding: 14px 30px;
+            border: none;
+            border-radius: 30px;
+            background: white;
+            color: #2563eb;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        .about {
+            background: white;
+            color: #222;
+            text-align: center;
+            padding: 70px 20px;
+        }
+
+        .about h2 {
+            font-size: 35px;
+            margin-bottom: 20px;
+        }
+
+        .about p {
+            max-width: 650px;
+            margin: auto;
+            font-size: 18px;
+            line-height: 1.6;
+        }
+
+        footer {
+            text-align: center;
+            padding: 25px;
+            background: #111827;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="logo">My Website</div>
+
+        <nav>
+            <a href="#">Home</a>
+            <a href="#about">About</a>
+            <a href="#contact">Contact</a>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <h1>Welcome 👋</h1>
+        <p>Yeh meri pehli website hai!</p>
+
+        <button onclick="showMessage()">
+            Click Me
+        </button>
+    </section>
+
+    <section class="about" id="about">
+        <h2>About My Website</h2>
+
+        <p>
+            Is website ko HTML, CSS aur JavaScript ki madad se banaya gaya hai.
+            Aap isme apna naam, photos, videos aur bahut kuch add kar sakte ho.
+        </p>
+    </section>
+
+    <footer id="contact">
+        © 2026 My Website | Made with ❤️
+    </footer>
+
+    <script>
+        function showMessage() {
+            alert("Welcome to my website! 🎉");
+        }
+    </script>
+
+</body>
+</html>
