@@ -4,95 +4,81 @@
     <title>My Website</title>
 
     <style>
-        * {
-            box-sizing: border-box;
-        }
-
         body {
             margin: 0;
             font-family: Arial, sans-serif;
             background: linear-gradient(135deg, #111827, #2563eb);
             color: white;
             text-align: center;
-            min-height: 100vh;
-            overflow-x: hidden;
         }
 
         header {
             padding: 25px;
-            background: rgba(0, 0, 0, 0.25);
+            background: rgba(0,0,0,0.3);
         }
 
         .logo {
             font-size: 30px;
             font-weight: bold;
-            animation: glow 2s infinite alternate;
+        }
+
+        nav {
+            margin-top: 15px;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            font-size: 18px;
         }
 
         .hero {
-            padding: 120px 20px;
+            padding: 80px 20px;
         }
 
         h1 {
-            font-size: 55px;
-            animation: zoomIn 1.5s ease;
+            font-size: 50px;
+            animation: zoom 1.5s ease;
         }
 
-        p {
-            font-size: 20px;
-            animation: slideUp 2s ease;
+        .videos {
+            background: white;
+            color: #222;
+            padding: 60px 20px;
         }
 
-        button {
-            padding: 15px 35px;
-            border: none;
-            border-radius: 30px;
-            font-size: 18px;
-            cursor: pointer;
-            animation: bounce 2s infinite;
+        .videos h2 {
+            font-size: 38px;
         }
 
-        button:hover {
-            transform: scale(1.15);
+        .video-box {
+            max-width: 700px;
+            margin: 30px auto;
+            padding: 20px;
+            background: #f1f1f1;
+            border-radius: 20px;
         }
 
-        @keyframes zoomIn {
+        video {
+            width: 100%;
+            border-radius: 15px;
+        }
+
+        footer {
+            padding: 25px;
+            background: #111827;
+        }
+
+        @keyframes zoom {
             from {
                 opacity: 0;
-                transform: scale(0.3);
+                transform: scale(0.5);
             }
+
             to {
                 opacity: 1;
                 transform: scale(1);
-            }
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes bounce {
-            0%, 100% {
-                transform: translateY(0);
-            }
-            50% {
-                transform: translateY(-12px);
-            }
-        }
-
-        @keyframes glow {
-            from {
-                transform: scale(1);
-            }
-            to {
-                transform: scale(1.08);
             }
         }
     </style>
@@ -102,21 +88,35 @@
 
     <header>
         <div class="logo">My Website 🚀</div>
+
+        <nav>
+            <a href="#">Home</a>
+            <a href="#videos">Videos</a>
+        </nav>
     </header>
 
     <section class="hero">
         <h1>Welcome 👋</h1>
-
-        <p>Welcome to my animated website!</p>
-
-        <button onclick="welcome()">Click Me</button>
+        <p>Welcome to my website!</p>
     </section>
 
-    <script>
-        function welcome() {
-            alert("Welcome to my website! 🎉");
-        }
-    </script>
+    <section class="videos" id="videos">
+        <h2>My Videos 🎬</h2>
+
+        <div class="video-box">
+            <h3>My First Video</h3>
+
+            <video controls>
+                <source src="video.mp4" type="video/mp4">
+                Your browser does not support video.
+            </video>
+        </div>
+
+    </section>
+
+    <footer>
+        © 2026 My Website
+    </footer>
 
 </body>
 </html>
