@@ -1,122 +1,479 @@
+```html
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>My Website</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sky Runner</title>
 
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #111827, #2563eb);
-            color: white;
-            text-align: center;
-        }
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
 
-        header {
-            padding: 25px;
-            background: rgba(0,0,0,0.3);
-        }
+body{
+    overflow:hidden;
+    font-family:Arial,sans-serif;
+    background:#111;
+}
 
-        .logo {
-            font-size: 30px;
-            font-weight: bold;
-        }
+#game{
+    width:100vw;
+    height:100vh;
+    position:relative;
+    overflow:hidden;
+    background:linear-gradient(#58c8ff 0%,#b9edff 48%,#555 49%,#222 100%);
+}
 
-        nav {
-            margin-top: 15px;
-        }
+/* SKY */
+.sun{
+    position:absolute;
+    width:100px;
+    height:100px;
+    background:#fff176;
+    border-radius:50%;
+    top:70px;
+    right:12%;
+    box-shadow:0 0 50px #fff176;
+}
 
-        nav a {
-            color: white;
-            text-decoration: none;
-            margin: 0 15px;
-            font-size: 18px;
-        }
+/* ROAD */
+.road{
+    position:absolute;
+    width:70%;
+    height:100%;
+    left:15%;
+    top:0;
+    background:#333;
+    transform:perspective(500px) rotateX(8deg);
+}
 
-        .hero {
-            padding: 80px 20px;
-        }
+.road:before,
+.road:after{
+    content:"";
+    position:absolute;
+    top:0;
+    width:8px;
+    height:100%;
+    background:#fff;
+}
 
-        h1 {
-            font-size: 50px;
-            animation: zoom 1.5s ease;
-        }
+.road:before{left:33.33%;}
+.road:after{left:66.66%;}
 
-        .videos {
-            background: white;
-            color: #222;
-            padding: 60px 20px;
-        }
+.line{
+    position:absolute;
+    width:12px;
+    height:100px;
+    background:#eee;
+    left:50%;
+    transform:translateX(-50%);
+    animation:roadMove .45s linear infinite;
+}
 
-        .videos h2 {
-            font-size: 38px;
-        }
+@keyframes roadMove{
+    from{top:-100px}
+    to{top:100vh}
+}
 
-        .video-box {
-            max-width: 700px;
-            margin: 30px auto;
-            padding: 20px;
-            background: #f1f1f1;
-            border-radius: 20px;
-        }
+/* PLAYER */
+#player{
+    position:absolute;
+    width:55px;
+    height:80px;
+    bottom:70px;
+    left:50%;
+    transform:translateX(-50%);
+    z-index:10;
+    transition:left .15s;
+}
 
-        video {
-            width: 100%;
-            border-radius: 15px;
-        }
+.head{
+    width:32px;
+    height:32px;
+    background:#ffd1a9;
+    border-radius:50%;
+    margin:auto;
+}
 
-        footer {
-            padding: 25px;
-            background: #111827;
-        }
+.body{
+    width:38px;
+    height:45px;
+    background:#ff4757;
+    border-radius:12px;
+    margin:auto;
+}
 
-        @keyframes zoom {
-            from {
-                opacity: 0;
-                transform: scale(0.5);
-            }
+.leg{
+    position:absolute;
+    width:12px;
+    height:30px;
+    background:#222;
+    bottom:0;
+    border-radius:8px;
+    animation:run .18s infinite alternate;
+}
 
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-    </style>
+.leg1{left:8px}
+.leg2{right:8px;animation-delay:.09s}
+
+@keyframes run{
+    from{transform:rotate(25deg)}
+    to{transform:rotate(-25deg)}
+}
+
+.jump{
+    animation:jump .65s ease-out;
+}
+
+@keyframes jump{
+    0%{bottom:70px}
+    45%{bottom:260px}
+    100%{bottom:70px}
+}
+
+/* COIN */
+.coin{
+    position:absolute;
+    width:28px;
+    height:28px;
+    border-radius:50%;
+    background:#ffd700;
+    border:4px solid #ff9800;
+    box-shadow:0 0 15px #ffd700;
+    z-index:5;
+    animation:coinSpin .3s linear infinite;
+}
+
+@keyframes coinSpin{
+    0%{transform:rotateY(0deg)}
+    100%{transform:rotateY(360deg)}
+}
+
+/* OBSTACLE */
+.obstacle{
+    position:absolute;
+    width:55px;
+    height:55px;
+    background:#8e44ad;
+    border:4px solid #e056fd;
+    border-radius:10px;
+    box-shadow:0 0 15px #e056fd;
+    z-index:4;
+}
+
+/* UI */
+#score{
+    position:absolute;
+    top:20px;
+    left:20px;
+    color:white;
+    font-size:25px;
+    font-weight:bold;
+    z-index:20;
+    text-shadow:2px 2px 5px #000;
+}
+
+#startScreen,
+#gameOver{
+    position:absolute;
+    inset:0;
+    background:rgba(0,0,0,.75);
+    color:white;
+    z-index:100;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+}
+
+#gameOver{
+    display:none;
+}
+
+h1{
+    font-size:55px;
+    color:#00eaff;
+    text-shadow:0 0 20px #00eaff;
+}
+
+button{
+    margin-top:25px;
+    padding:14px 35px;
+    font-size:20px;
+    border:0;
+    border-radius:30px;
+    background:#00eaff;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+button:hover{
+    transform:scale(1.08);
+}
+</style>
 </head>
 
 <body>
 
-    <header>
-        <div class="logo">My Website 🚀</div>
+<div id="game">
 
-        <nav>
-            <a href="#">Home</a>
-            <a href="#videos">Videos</a>
-        </nav>
-    </header>
+    <div class="sun"></div>
 
-    <section class="hero">
-        <h1>Welcome 👋</h1>
-        <p>Welcome to my website!</p>
-    </section>
+    <div class="road">
+        <div class="line"></div>
+    </div>
 
-    <section class="videos" id="videos">
-        <h2>My Videos 🎬</h2>
+    <div id="score">Score: 0 🪙 0</div>
 
-        <div class="video-box">
-            <h3>My First Video</h3>
+    <div id="player">
+        <div class="head"></div>
+        <div class="body"></div>
+        <div class="leg leg1"></div>
+        <div class="leg leg2"></div>
+    </div>
 
-            <video controls>
-                <source src="video.mp4" type="video/mp4">
-                Your browser does not support video.
-            </video>
-        </div>
+    <div id="startScreen">
+        <h1>SKY RUNNER</h1>
+        <p>← → Move &nbsp;&nbsp; SPACE = Jump</p>
+        <button onclick="startGame()">START GAME</button>
+    </div>
 
-    </section>
+    <div id="gameOver">
+        <h1>GAME OVER</h1>
+        <p id="finalScore"></p>
+        <button onclick="location.reload()">PLAY AGAIN</button>
+    </div>
 
-    <footer>
-        © 2026 My Website
-    </footer>
+</div>
+
+<script>
+
+const game = document.getElementById("game");
+const player = document.getElementById("player");
+const scoreText = document.getElementById("score");
+
+let lane = 1;
+let score = 0;
+let coins = 0;
+let speed = 6;
+let playing = false;
+let jumping = false;
+
+const lanes = ["33%","50%","67%"];
+
+function startGame(){
+
+    document.getElementById("startScreen").style.display="none";
+    playing=true;
+
+    movePlayer();
+
+    setInterval(createCoin,900);
+    setInterval(createObstacle,1300);
+
+    gameLoop();
+}
+
+/* PLAYER MOVEMENT */
+
+function movePlayer(){
+
+    player.style.left = lanes[lane];
+
+}
+
+document.addEventListener("keydown",e=>{
+
+    if(!playing)return;
+
+    if(e.key==="ArrowLeft" && lane>0){
+        lane--;
+        movePlayer();
+    }
+
+    if(e.key==="ArrowRight" && lane<2){
+        lane++;
+        movePlayer();
+    }
+
+    if(e.code==="Space"){
+        jump();
+    }
+
+});
+
+/* JUMP */
+
+function jump(){
+
+    if(jumping)return;
+
+    jumping=true;
+
+    player.classList.add("jump");
+
+    setTimeout(()=>{
+        player.classList.remove("jump");
+        jumping=false;
+    },650);
+
+}
+
+/* COIN */
+
+function createCoin(){
+
+    if(!playing)return;
+
+    const coin=document.createElement("div");
+
+    coin.className="coin";
+
+    const randomLane=Math.floor(Math.random()*3);
+
+    coin.style.left=lanes[randomLane];
+
+    coin.style.top="-40px";
+
+    game.appendChild(coin);
+
+    let y=-40;
+
+    const move=setInterval(()=>{
+
+        y+=speed;
+
+        coin.style.top=y+"px";
+
+        const p=player.getBoundingClientRect();
+        const c=coin.getBoundingClientRect();
+
+        if(
+            p.left<c.right &&
+            p.right>c.left &&
+            p.top<c.bottom &&
+            p.bottom>c.top
+        ){
+
+            coins++;
+            score+=10;
+
+            scoreText.innerText=
+            "Score: "+score+" 🪙 "+coins;
+
+            coin.remove();
+            clearInterval(move);
+        }
+
+        if(y>innerHeight){
+
+            coin.remove();
+            clearInterval(move);
+
+        }
+
+    },30);
+
+}
+
+/* OBSTACLE */
+
+function createObstacle(){
+
+    if(!playing)return;
+
+    const obstacle=document.createElement("div");
+
+    obstacle.className="obstacle";
+
+    const randomLane=Math.floor(Math.random()*3);
+
+    obstacle.style.left=lanes[randomLane];
+
+    obstacle.style.top="-70px";
+
+    game.appendChild(obstacle);
+
+    let y=-70;
+
+    const move=setInterval(()=>{
+
+        y+=speed;
+
+        obstacle.style.top=y+"px";
+
+        const p=player.getBoundingClientRect();
+        const o=obstacle.getBoundingClientRect();
+
+        if(
+            p.left<o.right &&
+            p.right>o.left &&
+            p.top<o.bottom &&
+            p.bottom>o.top
+        ){
+
+            if(!jumping){
+
+                endGame();
+
+                obstacle.remove();
+                clearInterval(move);
+
+            }
+
+        }
+
+        if(y>innerHeight){
+
+            obstacle.remove();
+            clearInterval(move);
+
+        }
+
+    },30);
+
+}
+
+/* GAME LOOP */
+
+function gameLoop(){
+
+    if(!playing)return;
+
+    score++;
+
+    scoreText.innerText=
+    "Score: "+score+" 🪙 "+coins;
+
+    if(score%500===0){
+
+        speed+=1;
+
+    }
+
+    requestAnimationFrame(gameLoop);
+
+}
+
+/* GAME OVER */
+
+function endGame(){
+
+    playing=false;
+
+    document.getElementById("gameOver").style.display="flex";
+
+    document.getElementById("finalScore").innerText=
+    "Your Score: "+score+" | Coins: "+coins;
+
+}
+
+</script>
 
 </body>
 </html>
+```
