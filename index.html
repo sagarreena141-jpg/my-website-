@@ -1,476 +1,754 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sky Runner</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Battle Arena</title>
 
 <style>
 *{
+    box-sizing:border-box;
     margin:0;
     padding:0;
-    box-sizing:border-box;
 }
 
 body{
     overflow:hidden;
-    font-family:Arial,sans-serif;
     background:#111;
+    font-family:Arial,sans-serif;
+    touch-action:none;
 }
 
-#game{
-    width:100vw;
-    height:100vh;
-    position:relative;
-    overflow:hidden;
-    background:linear-gradient(#58c8ff 0%,#b9edff 48%,#555 49%,#222 100%);
+canvas{
+    display:block;
+    background:#3c8f45;
 }
 
-/* SKY */
-.sun{
-    position:absolute;
-    width:100px;
-    height:100px;
-    background:#fff176;
-    border-radius:50%;
-    top:70px;
-    right:12%;
-    box-shadow:0 0 50px #fff176;
-}
-
-/* ROAD */
-.road{
-    position:absolute;
-    width:70%;
-    height:100%;
-    left:15%;
-    top:0;
-    background:#333;
-    transform:perspective(500px) rotateX(8deg);
-}
-
-.road:before,
-.road:after{
-    content:"";
-    position:absolute;
-    top:0;
-    width:8px;
-    height:100%;
-    background:#fff;
-}
-
-.road:before{left:33.33%;}
-.road:after{left:66.66%;}
-
-.line{
-    position:absolute;
-    width:12px;
-    height:100px;
-    background:#eee;
-    left:50%;
-    transform:translateX(-50%);
-    animation:roadMove .45s linear infinite;
-}
-
-@keyframes roadMove{
-    from{top:-100px}
-    to{top:100vh}
-}
-
-/* PLAYER */
-#player{
-    position:absolute;
-    width:55px;
-    height:80px;
-    bottom:70px;
-    left:50%;
-    transform:translateX(-50%);
-    z-index:10;
-    transition:left .15s;
-}
-
-.head{
-    width:32px;
-    height:32px;
-    background:#ffd1a9;
-    border-radius:50%;
-    margin:auto;
-}
-
-.body{
-    width:38px;
-    height:45px;
-    background:#ff4757;
-    border-radius:12px;
-    margin:auto;
-}
-
-.leg{
-    position:absolute;
-    width:12px;
-    height:30px;
-    background:#222;
-    bottom:0;
-    border-radius:8px;
-    animation:run .18s infinite alternate;
-}
-
-.leg1{left:8px}
-.leg2{right:8px;animation-delay:.09s}
-
-@keyframes run{
-    from{transform:rotate(25deg)}
-    to{transform:rotate(-25deg)}
-}
-
-.jump{
-    animation:jump .65s ease-out;
-}
-
-@keyframes jump{
-    0%{bottom:70px}
-    45%{bottom:260px}
-    100%{bottom:70px}
-}
-
-/* COIN */
-.coin{
-    position:absolute;
-    width:28px;
-    height:28px;
-    border-radius:50%;
-    background:#ffd700;
-    border:4px solid #ff9800;
-    box-shadow:0 0 15px #ffd700;
+#hud{
+    position:fixed;
+    top:12px;
+    left:12px;
     z-index:5;
-    animation:coinSpin .3s linear infinite;
-}
-
-@keyframes coinSpin{
-    0%{transform:rotateY(0deg)}
-    100%{transform:rotateY(360deg)}
-}
-
-/* OBSTACLE */
-.obstacle{
-    position:absolute;
-    width:55px;
-    height:55px;
-    background:#8e44ad;
-    border:4px solid #e056fd;
-    border-radius:10px;
-    box-shadow:0 0 15px #e056fd;
-    z-index:4;
-}
-
-/* UI */
-#score{
-    position:absolute;
-    top:20px;
-    left:20px;
     color:white;
-    font-size:25px;
+    font-size:18px;
     font-weight:bold;
-    z-index:20;
-    text-shadow:2px 2px 5px #000;
+    text-shadow:2px 2px 3px #000;
 }
 
-#startScreen,
-#gameOver{
-    position:absolute;
-    inset:0;
-    background:rgba(0,0,0,.75);
-    color:white;
-    z-index:100;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    text-align:center;
+#healthBox{
+    margin-top:7px;
+    width:180px;
+    height:18px;
+    background:#333;
+    border:2px solid white;
+    border-radius:10px;
+    overflow:hidden;
+}
+
+#health{
+    width:100%;
+    height:100%;
+    background:#18d64b;
 }
 
 #gameOver{
     display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.75);
+    z-index:20;
+    color:white;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
 }
 
-h1{
-    font-size:55px;
-    color:#00eaff;
-    text-shadow:0 0 20px #00eaff;
+#gameOver h1{
+    font-size:48px;
+    margin-bottom:15px;
 }
 
-button{
-    margin-top:25px;
-    padding:14px 35px;
+#restart{
+    padding:14px 28px;
     font-size:20px;
     border:0;
-    border-radius:30px;
-    background:#00eaff;
+    border-radius:10px;
     cursor:pointer;
+}
+
+#mobileControls{
+    display:none;
+    position:fixed;
+    bottom:20px;
+    left:20px;
+    right:20px;
+    z-index:10;
+}
+
+#joystick{
+    width:150px;
+    height:150px;
+    position:relative;
+}
+
+.btn{
+    position:absolute;
+    width:55px;
+    height:55px;
+    border-radius:50%;
+    border:2px solid white;
+    background:rgba(0,0,0,.45);
+    color:white;
+    font-size:24px;
     font-weight:bold;
 }
 
-button:hover{
-    transform:scale(1.08);
+#up{left:48px;top:0}
+#left{left:0;top:48px}
+#down{left:48px;top:96px}
+#right{left:96px;top:48px}
+
+#fire{
+    position:absolute;
+    right:10px;
+    bottom:35px;
+    width:95px;
+    height:95px;
+    border-radius:50%;
+    border:3px solid white;
+    background:rgba(200,0,0,.7);
+    color:white;
+    font-size:20px;
+    font-weight:bold;
+}
+
+@media (max-width:800px){
+    #mobileControls{
+        display:block;
+    }
 }
 </style>
 </head>
 
 <body>
 
-<div id="game">
+<canvas id="game"></canvas>
 
-    <div class="sun"></div>
+<div id="hud">
+    ⭐ Score: <span id="score">0</span>
+    <div id="healthBox">
+        <div id="health"></div>
+    </div>
+</div>
 
-    <div class="road">
-        <div class="line"></div>
+<div id="mobileControls">
+
+    <div id="joystick">
+        <button class="btn" id="up">▲</button>
+        <button class="btn" id="left">◀</button>
+        <button class="btn" id="down">▼</button>
+        <button class="btn" id="right">▶</button>
     </div>
 
-    <div id="score">Score: 0 🪙 0</div>
+    <button id="fire">FIRE</button>
 
-    <div id="player">
-        <div class="head"></div>
-        <div class="body"></div>
-        <div class="leg leg1"></div>
-        <div class="leg leg2"></div>
-    </div>
+</div>
 
-    <div id="startScreen">
-        <h1>SKY RUNNER</h1>
-        <p>← → Move &nbsp;&nbsp; SPACE = Jump</p>
-        <button onclick="startGame()">START GAME</button>
-    </div>
-
-    <div id="gameOver">
-        <h1>GAME OVER</h1>
-        <p id="finalScore"></p>
-        <button onclick="location.reload()">PLAY AGAIN</button>
-    </div>
-
+<div id="gameOver">
+    <h1>GAME OVER</h1>
+    <p id="finalScore"></p>
+    <br>
+    <button id="restart">PLAY AGAIN</button>
 </div>
 
 <script>
 
-const game = document.getElementById("game");
-const player = document.getElementById("player");
-const scoreText = document.getElementById("score");
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
 
-let lane = 1;
+function resize(){
+    canvas.width = innerWidth;
+    canvas.height = innerHeight;
+}
+
+resize();
+window.addEventListener("resize",resize);
+
 let score = 0;
-let coins = 0;
-let speed = 6;
-let playing = false;
-let jumping = false;
+let health = 100;
+let gameRunning = true;
 
-const lanes = ["33%","50%","67%"];
-
-function startGame(){
-
-    document.getElementById("startScreen").style.display="none";
-    playing=true;
-
-    movePlayer();
-
-    setInterval(createCoin,900);
-    setInterval(createObstacle,1300);
-
-    gameLoop();
-}
-
-/* PLAYER MOVEMENT */
-
-function movePlayer(){
-
-    player.style.left = lanes[lane];
-
-}
+const keys = {};
 
 document.addEventListener("keydown",e=>{
-
-    if(!playing)return;
-
-    if(e.key==="ArrowLeft" && lane>0){
-        lane--;
-        movePlayer();
-    }
-
-    if(e.key==="ArrowRight" && lane<2){
-        lane++;
-        movePlayer();
-    }
-
-    if(e.code==="Space"){
-        jump();
-    }
-
+    keys[e.key.toLowerCase()] = true;
 });
 
-/* JUMP */
+document.addEventListener("keyup",e=>{
+    keys[e.key.toLowerCase()] = false;
+});
 
-function jump(){
+/* PLAYER */
 
-    if(jumping)return;
+const player = {
+    x:canvas.width/2,
+    y:canvas.height/2,
+    size:24,
+    speed:4,
+    angle:0
+};
 
-    jumping=true;
+/* MOUSE */
 
-    player.classList.add("jump");
+let mouseX = player.x;
+let mouseY = player.y;
+let mouseDown = false;
 
-    setTimeout(()=>{
-        player.classList.remove("jump");
-        jumping=false;
-    },650);
+canvas.addEventListener("mousemove",e=>{
+    mouseX=e.clientX;
+    mouseY=e.clientY;
+});
 
+canvas.addEventListener("mousedown",()=>{
+    mouseDown=true;
+});
+
+canvas.addEventListener("mouseup",()=>{
+    mouseDown=false;
+});
+
+/* MOBILE MOVEMENT */
+
+const mobileKeys={
+    up:false,
+    down:false,
+    left:false,
+    right:false
+};
+
+function touchButton(id,key){
+
+    const el=document.getElementById(id);
+
+    el.addEventListener("touchstart",e=>{
+        e.preventDefault();
+        mobileKeys[key]=true;
+    });
+
+    el.addEventListener("touchend",e=>{
+        e.preventDefault();
+        mobileKeys[key]=false;
+    });
+
+    el.addEventListener("mousedown",()=>{
+        mobileKeys[key]=true;
+    });
+
+    el.addEventListener("mouseup",()=>{
+        mobileKeys[key]=false;
+    });
+
+    el.addEventListener("mouseleave",()=>{
+        mobileKeys[key]=false;
+    });
 }
 
-/* COIN */
+touchButton("up","up");
+touchButton("down","down");
+touchButton("left","left");
+touchButton("right","right");
 
-function createCoin(){
+const fireButton=document.getElementById("fire");
 
-    if(!playing)return;
+fireButton.addEventListener("touchstart",e=>{
+    e.preventDefault();
+    mouseDown=true;
+});
 
-    const coin=document.createElement("div");
+fireButton.addEventListener("touchend",e=>{
+    e.preventDefault();
+    mouseDown=false;
+});
 
-    coin.className="coin";
+fireButton.addEventListener("mousedown",()=>{
+    mouseDown=true;
+});
 
-    const randomLane=Math.floor(Math.random()*3);
+fireButton.addEventListener("mouseup",()=>{
+    mouseDown=false;
+});
 
-    coin.style.left=lanes[randomLane];
+/* BULLETS */
 
-    coin.style.top="-40px";
+let bullets=[];
 
-    game.appendChild(coin);
+function shoot(){
 
-    let y=-40;
+    const dx=mouseX-player.x;
+    const dy=mouseY-player.y;
 
-    const move=setInterval(()=>{
+    const length=Math.hypot(dx,dy);
 
-        y+=speed;
+    if(length===0)return;
 
-        coin.style.top=y+"px";
-
-        const p=player.getBoundingClientRect();
-        const c=coin.getBoundingClientRect();
-
-        if(
-            p.left<c.right &&
-            p.right>c.left &&
-            p.top<c.bottom &&
-            p.bottom>c.top
-        ){
-
-            coins++;
-            score+=10;
-
-            scoreText.innerText=
-            "Score: "+score+" 🪙 "+coins;
-
-            coin.remove();
-            clearInterval(move);
-        }
-
-        if(y>innerHeight){
-
-            coin.remove();
-            clearInterval(move);
-
-        }
-
-    },30);
-
+    bullets.push({
+        x:player.x,
+        y:player.y,
+        vx:dx/length*9,
+        vy:dy/length*9,
+        life:100
+    });
 }
 
-/* OBSTACLE */
+/* SHOOT TIMER */
 
-function createObstacle(){
+let shootCooldown=0;
 
-    if(!playing)return;
+/* ENEMIES */
 
-    const obstacle=document.createElement("div");
+let enemies=[];
 
-    obstacle.className="obstacle";
+function spawnEnemy(){
 
-    const randomLane=Math.floor(Math.random()*3);
+    let side=Math.floor(Math.random()*4);
 
-    obstacle.style.left=lanes[randomLane];
+    let x,y;
 
-    obstacle.style.top="-70px";
+    if(side===0){
+        x=-30;
+        y=Math.random()*canvas.height;
+    }
 
-    game.appendChild(obstacle);
+    if(side===1){
+        x=canvas.width+30;
+        y=Math.random()*canvas.height;
+    }
 
-    let y=-70;
+    if(side===2){
+        x=Math.random()*canvas.width;
+        y=-30;
+    }
 
-    const move=setInterval(()=>{
+    if(side===3){
+        x=Math.random()*canvas.width;
+        y=canvas.height+30;
+    }
 
-        y+=speed;
+    enemies.push({
+        x:x,
+        y:y,
+        size:25,
+        speed:1.2+Math.random()*1.2,
+        hp:2
+    });
+}
 
-        obstacle.style.top=y+"px";
+setInterval(()=>{
+    if(gameRunning){
+        spawnEnemy();
+    }
+},1200);
 
-        const p=player.getBoundingClientRect();
-        const o=obstacle.getBoundingClientRect();
+/* PARTICLES */
 
-        if(
-            p.left<o.right &&
-            p.right>o.left &&
-            p.top<o.bottom &&
-            p.bottom>o.top
-        ){
+let particles=[];
 
-            if(!jumping){
+function explosion(x,y){
 
-                endGame();
+    for(let i=0;i<12;i++){
 
-                obstacle.remove();
-                clearInterval(move);
+        particles.push({
+            x:x,
+            y:y,
+            vx:(Math.random()-.5)*6,
+            vy:(Math.random()-.5)*6,
+            life:30
+        });
 
+    }
+}
+
+/* UPDATE */
+
+function update(){
+
+    if(!gameRunning)return;
+
+    let dx=0;
+    let dy=0;
+
+    if(keys["w"] || keys["arrowup"] || mobileKeys.up)dy-=1;
+    if(keys["s"] || keys["arrowdown"] || mobileKeys.down)dy+=1;
+    if(keys["a"] || keys["arrowleft"] || mobileKeys.left)dx-=1;
+    if(keys["d"] || keys["arrowright"] || mobileKeys.right)dx+=1;
+
+    if(dx!==0 || dy!==0){
+
+        let len=Math.hypot(dx,dy);
+
+        dx/=len;
+        dy/=len;
+
+        player.x+=dx*player.speed;
+        player.y+=dy*player.speed;
+    }
+
+    player.x=Math.max(20,Math.min(canvas.width-20,player.x));
+    player.y=Math.max(20,Math.min(canvas.height-20,player.y));
+
+    player.angle=Math.atan2(
+        mouseY-player.y,
+        mouseX-player.x
+    );
+
+    /* SHOOT */
+
+    if(mouseDown && shootCooldown<=0){
+
+        shoot();
+        shootCooldown=12;
+
+    }
+
+    if(shootCooldown>0)shootCooldown--;
+
+    /* BULLETS */
+
+    bullets.forEach(b=>{
+        b.x+=b.vx;
+        b.y+=b.vy;
+        b.life--;
+    });
+
+    bullets=bullets.filter(b=>
+        b.life>0 &&
+        b.x>-50 &&
+        b.x<canvas.width+50 &&
+        b.y>-50 &&
+        b.y<canvas.height+50
+    );
+
+    /* ENEMIES */
+
+    enemies.forEach(e=>{
+
+        let dx=player.x-e.x;
+        let dy=player.y-e.y;
+
+        let dist=Math.hypot(dx,dy);
+
+        if(dist>1){
+
+            e.x+=dx/dist*e.speed;
+            e.y+=dy/dist*e.speed;
+
+        }
+
+        if(dist<player.size+e.size){
+
+            health-=0.35;
+
+            if(health<=0){
+                gameOver();
             }
 
         }
 
-        if(y>innerHeight){
+    });
 
-            obstacle.remove();
-            clearInterval(move);
+    /* BULLET COLLISION */
 
-        }
+    bullets.forEach(b=>{
 
-    },30);
+        enemies.forEach(e=>{
 
+            let d=Math.hypot(
+                b.x-e.x,
+                b.y-e.y
+            );
+
+            if(d<e.size){
+
+                e.hp--;
+
+                b.life=0;
+
+                if(e.hp<=0){
+
+                    explosion(e.x,e.y);
+
+                    e.dead=true;
+
+                    score+=10;
+
+                    document.getElementById("score").textContent=score;
+                }
+
+            }
+
+        });
+
+    });
+
+    enemies=enemies.filter(e=>!e.dead);
+
+    /* PARTICLES */
+
+    particles.forEach(p=>{
+        p.x+=p.vx;
+        p.y+=p.vy;
+        p.life--;
+    });
+
+    particles=particles.filter(p=>p.life>0);
+
+    document.getElementById("health").style.width=
+        Math.max(0,health)+"%";
 }
 
-/* GAME LOOP */
+/* DRAW */
 
-function gameLoop(){
+function draw(){
 
-    if(!playing)return;
+    ctx.clearRect(
+        0,0,
+        canvas.width,
+        canvas.height
+    );
 
-    score++;
+    /* GRASS */
 
-    scoreText.innerText=
-    "Score: "+score+" 🪙 "+coins;
+    ctx.fillStyle="#3c8f45";
+    ctx.fillRect(
+        0,0,
+        canvas.width,
+        canvas.height
+    );
 
-    if(score%500===0){
+    /* ROAD */
 
-        speed+=1;
+    ctx.fillStyle="#555";
 
-    }
+    ctx.fillRect(
+        canvas.width/2-150,
+        0,
+        300,
+        canvas.height
+    );
 
-    requestAnimationFrame(gameLoop);
+    ctx.fillStyle="#777";
+
+    ctx.fillRect(
+        0,
+        canvas.height/2-100,
+        canvas.width,
+        200
+    );
+
+    /* ROAD LINES */
+
+    ctx.strokeStyle="#eee";
+    ctx.lineWidth=5;
+    ctx.setLineDash([25,25]);
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        canvas.width/2,
+        0
+    );
+
+    ctx.lineTo(
+        canvas.width/2,
+        canvas.height
+    );
+
+    ctx.stroke();
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        0,
+        canvas.height/2
+    );
+
+    ctx.lineTo(
+        canvas.width,
+        canvas.height/2
+    );
+
+    ctx.stroke();
+
+    ctx.setLineDash([]);
+
+    /* BULLETS */
+
+    ctx.fillStyle="#ffd21c";
+
+    bullets.forEach(b=>{
+        ctx.beginPath();
+        ctx.arc(b.x,b.y,5,0,Math.PI*2);
+        ctx.fill();
+    });
+
+    /* ENEMIES */
+
+    enemies.forEach(e=>{
+
+        ctx.save();
+
+        ctx.translate(e.x,e.y);
+
+        /* body */
+
+        ctx.fillStyle="#222";
+
+        ctx.beginPath();
+        ctx.arc(
+            0,0,
+            e.size,
+            0,
+            Math.PI*2
+        );
+
+        ctx.fill();
+
+        /* face */
+
+        ctx.fillStyle="#e33";
+
+        ctx.beginPath();
+        ctx.arc(-7,-4,4,0,Math.PI*2);
+        ctx.arc(7,-4,4,0,Math.PI*2);
+        ctx.fill();
+
+        /* HP */
+
+        ctx.fillStyle="#222";
+        ctx.fillRect(-25,-38,50,6);
+
+        ctx.fillStyle="#20e052";
+        ctx.fillRect(-25,-38,25*e.hp,6);
+
+        ctx.restore();
+
+    });
+
+    /* PLAYER */
+
+    ctx.save();
+
+    ctx.translate(player.x,player.y);
+    ctx.rotate(player.angle);
+
+    /* body */
+
+    ctx.fillStyle="#168cff";
+
+    ctx.beginPath();
+    ctx.arc(
+        0,0,
+        player.size,
+        0,
+        Math.PI*2
+    );
+
+    ctx.fill();
+
+    /* gun */
+
+    ctx.fillStyle="#222";
+
+    ctx.fillRect(
+        10,-6,
+        30,
+        12
+    );
+
+    /* face */
+
+    ctx.fillStyle="#ffd0a0";
+
+    ctx.beginPath();
+    ctx.arc(
+        5,0,
+        11,
+        0,
+        Math.PI*2
+    );
+
+    ctx.fill();
+
+    ctx.restore();
+
+    /* PARTICLES */
+
+    particles.forEach(p=>{
+
+        ctx.fillStyle="#ffcc00";
+
+        ctx.beginPath();
+
+        ctx.arc(
+            p.x,
+            p.y,
+            3,
+            0,
+            Math.PI*2
+        );
+
+        ctx.fill();
+
+    });
 
 }
 
 /* GAME OVER */
 
-function endGame(){
+function gameOver(){
 
-    playing=false;
+    gameRunning=false;
+
+    document.getElementById("finalScore").textContent=
+        "Your Score: "+score;
 
     document.getElementById("gameOver").style.display="flex";
-
-    document.getElementById("finalScore").innerText=
-    "Your Score: "+score+" | Coins: "+coins;
-
 }
+
+/* RESTART */
+
+document.getElementById("restart").onclick=()=>{
+
+    score=0;
+    health=100;
+
+    player.x=canvas.width/2;
+    player.y=canvas.height/2;
+
+    bullets=[];
+    enemies=[];
+    particles=[];
+
+    document.getElementById("score").textContent="0";
+
+    document.getElementById("health").style.width="100%";
+
+    document.getElementById("gameOver").style.display="none";
+
+    gameRunning=true;
+};
+
+/* GAME LOOP */
+
+function gameLoop(){
+
+    update();
+    draw();
+
+    requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
 
 </script>
 
