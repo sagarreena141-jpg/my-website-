@@ -1,0 +1,129 @@
+package com.example.runnergame
+
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
+import kotlin.random.Random
+
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            RunnerGame()
+        }
+    }
+}
+
+@Composable
+fun RunnerGame() {
+    var playerX by remember { mutableFloatStateOf(0.5f) }
+    var playerY by remember { mutableFloatStateOf(0.82f) }
+    var obstacleX by remember { mutableFloatStateOf(Random.nextFloat()) }
+    var obstacleY by remember { mutableFloatStateOf(0f) }
+    var score by remember { mutableIntStateOf(0) }
+    var gameOver by remember { mutableStateOf(false) }
+
+    LaunchedEffect(gameOver) {
+        while (!gameOver) {
+            delay(16)
+            obstacleY += 0.012f
+
+            if (obstacleY > 1f) {
+                obstacleY = 0f
+                obstacleX = Random.nextFloat()
+                score++
+            }
+
+            if (
+                obstacleY > 0.75f &&
+                obstacleY < 0.9f &&
+                kotlin.math.abs(playerX - obstacleX) < 0.12f
+            ) {
+                gameOver = true
+            }
+        }
+    }
+
+    Canvas(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(80, 180, 255))
+            .pointerInput(Unit) {
+                detectDragGestures { _, dragAmount ->
+                    playerX = (playerX + dragAmount.x / size.width)
+                        .coerceIn(0.12f, 0.88f)
+                }
+            }
+    ) {
+        val w = size.width
+        val h = size.height
+
+        // Road
+        drawRect(
+            Color.DarkGray,
+            topLeft = Offset(w * 0.1f, 0f),
+            size = androidx.compose.ui.geometry.Size(w * 0.8f, h)
+        )
+
+        // Road lines
+        for (i in 1..2) {
+            drawRect(
+                Color.White,
+                topLeft = Offset(w * (0.1f + i * 0.8f / 3), 0f),
+                size = androidx.compose.ui.geometry.Size(8f, h)
+            )
+        }
+
+        // Player
+        drawCircle(
+            Color.Red,
+            radius = 35f,
+            center = Offset(playerX * w, playerY * h)
+        )
+
+        // Obstacle
+        drawRect(
+            Color.Black,
+            topLeft = Offset(
+                obstacleX * w - 35f,
+                obstacleY * h
+            ),
+            size = androidx.compose.ui.geometry.Size(70f, 70f)
+        )
+
+        if (gameOver) {
+            drawContext.canvas.nativeCanvas.drawText(
+                "GAME OVER",
+                w / 2 - 180f,
+                h / 2,
+                android.graphics.Paint().apply {
+                    color = android.graphics.Color.WHITE
+                    textSize = 70f
+                    textAlign = android.graphics.Paint.Align.CENTER
+                }
+            )
+        }
+
+        drawContext.canvas.nativeCanvas.drawText(
+            "Score: $score",
+            30f,
+            70f,
+            android.graphics.Paint().apply {
+                color = android.graphics.Color.WHITE
+                textSize = 45f
+            }
+        )
+    }
+}
